@@ -1,0 +1,109 @@
+.index
+  display: flex
+  z-index: 1
+  padding: 0 20px
+  flex-direction: column
+  align-items: center
+  position: relative
+  user-select: none
+
+.indexTitle
+  max-width: 700px
+  margin: 70px 0
+
+.indexText
+  color: #798196
+  max-width: 500px
+  font-size: 16px
+  align-self: flex-start
+  margin-bottom: 40px
+
+.indexButton
+  width: 170px
+  height: 63px
+  border-radius: 8px
+  background: #AAE088
+  cursor: pointer
+  transition: .2s
+  display: flex
+  justify-content: center
+  align-items: center
+  color: #000
+  font-weight: bold
+  align-self: flex-start
+  &:hover
+    opacity: .8
+
+.indexArrow
+  position: absolute
+  bottom: -60px
+  right: 400px
+  z-index: 100
+
+.indexClick
+  text-transform: uppercase
+  color: #FCCB5B
+  font-family: 'Nanum Pen Script', cursive
+  font-size: 28px
+  cursor: pointer
+  position: absolute
+  right: 370px
+  bottom: 80px
+  z-index: 150
+
+.indexClick_2
+  text-transform: uppercase
+  color: #FCCB5B
+  font-family: 'Nanum Pen Script', cursive
+  font-size: 28px
+  cursor: pointer
+  display: none
+
+.indexNft
+  cursor: pointer
+  position: fixed
+  bottom: 0
+  right: 0
+  width: 400px
+  z-index: 100
+
+@media (max-width: 1060px)
+  .index
+    margin-bottom: 20px
+  .indexButton
+    margin-bottom: 40px
+
+  .indexArrow
+    left: 0
+    bottom: 0
+
+  .indexClick
+    left: 60px
+    bottom: 150px
+
+  .indexNft
+    position: static
+    align-self: flex-end
+
+@media (max-width: 700px)
+  .indexTitle
+    width: 100%
+
+  .index
+    height: auto
+
+  .indexNft
+    position: static
+    width: 100%
+
+  .indexClick
+    display: none
+
+  .indexClick_2
+    display: inline
+
+  .indexArrow
+    display: none
+
+  .indexButton
+    margin: auto
