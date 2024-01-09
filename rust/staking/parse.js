@@ -37,6 +37,8 @@ export const getStakingAccounts = async () => {
       data.unshift(0);
       const res = desStaking(Buffer.from(data));
       ['start', 'end'].forEach(k => res[k] = parseInt(res[k]));
+      res.img = robots[res.mint].img;
+      res.name = robots[res.mint].name;
       arr.push(res);
     }catch(e) {}
   }

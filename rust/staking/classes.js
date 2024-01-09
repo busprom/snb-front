@@ -1,6 +1,6 @@
 import { PublicKey, SYSVAR_RENT_PUBKEY, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { deserialize, serialize } from "../borsh";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, METADATA_PROGRAM_ID, RENT_PROGRAM, STAKE_PROGRAM_ID, TOKEN_AUTH_RULES_ACC, TOKEN_AUTH_RULES_ID, TOKEN_PROGRAM_ID, connection, findStakeAccount, findTokenAccount, getEditionAccount, getInstruction, getMetadataAccount, getTokenRecordAcc, getWallet } from "../const";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, METADATA_PROGRAM_ID, RENT_PROGRAM, STAKE_PROGRAM_ID, TOKEN_AUTH_RULES_ACC, TOKEN_AUTH_RULES_ID, TOKEN_PROGRAM_ID, connection, findStakeAccount, findTokenAccount, getEditionAccount, getInstruction, getMetadataAccount, getTokenRecordAcc, getWallet, instruction } from "../const";
 import { timer } from "../send";
 
 export const addToStaking = async (arr, setStatus, end = 0) => {
@@ -9,7 +9,7 @@ export const addToStaking = async (arr, setStatus, end = 0) => {
   const block = await connection.getRecentBlockhash('singleGossip');
 
   let items = [];
-  for(let i = 0; i < arr.length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     let mint = arr[i];
     let data = Buffer.from(serialize(schema_staking, new Staking({
       start: 0,
@@ -24,26 +24,26 @@ export const addToStaking = async (arr, setStatus, end = 0) => {
 
     let metadataAccount = getMetadataAccount(new PublicKey(mint));
     let edition = getEditionAccount(mint);
-    let from_record_accaunt = getTokenRecordAcc(new PublicKey(from_token_accaunt), new PublicKey(mint));    
+    let from_record_accaunt = getTokenRecordAcc(new PublicKey(from_token_accaunt), new PublicKey(mint));
     let to_record_accaunt = getTokenRecordAcc(new PublicKey(to_token_accaunt), new PublicKey(mint));
 
-  const tx = new Transaction();
-  tx.add(
-    new TransactionInstruction({
-      keys: [
-        { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-        { pubkey: new PublicKey(stake_acc), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(mint), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(to_token_accaunt), isSigner: false, isWritable: true },
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-        { pubkey: RENT_PROGRAM, isSigner: false, isWritable: false },
-        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }
-      ],
-      programId: STAKE_PROGRAM_ID, 
-      data: getInstruction('CreateTokenAcc')
-    })
-  );
+    const tx = new Transaction();
+    tx.add(
+      new TransactionInstruction({
+        keys: [
+          { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+          { pubkey: new PublicKey(stake_acc), isSigner: false, isWritable: true },
+          { pubkey: new PublicKey(mint), isSigner: false, isWritable: true },
+          { pubkey: new PublicKey(to_token_accaunt), isSigner: false, isWritable: true },
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: RENT_PROGRAM, isSigner: false, isWritable: false },
+          { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+          { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }
+        ],
+        programId: STAKE_PROGRAM_ID,
+        data: getInstruction('CreateTokenAcc')
+      })
+    );
 
     tx.add(
       new TransactionInstruction({
@@ -67,7 +67,7 @@ export const addToStaking = async (arr, setStatus, end = 0) => {
           { pubkey: TOKEN_AUTH_RULES_ID, isSigner: false, isWritable: false },
           { pubkey: TOKEN_AUTH_RULES_ACC, isSigner: false, isWritable: false },
         ],
-        programId: STAKE_PROGRAM_ID, 
+        programId: STAKE_PROGRAM_ID,
         data
       })
     );
@@ -84,7 +84,7 @@ export const addToStaking = async (arr, setStatus, end = 0) => {
     let k = items[i].serialize();
     let txId = await connection.sendRawTransaction(k, { skipPreflight: true });
 
-    if(setStatus) setStatus('Stake NFT - ' + (i + 1));
+    if (setStatus) setStatus('Stake NFT - ' + (i + 1));
 
     let conf;
     const confirm = async id => {
@@ -102,7 +102,7 @@ export const addToStaking = async (arr, setStatus, end = 0) => {
 
 export const desStaking = buffer => deserialize(schema_staking, Staking, buffer);
 class Staking {
-  instruction = 0;
+  instruction = instruction.Stake;
   constructor(obj) {
     Object.assign(this, obj)
   }
@@ -125,16 +125,16 @@ export const unstakeNft = async (arr, setStatus) => {
   const block = await connection.getRecentBlockhash('singleGossip');
 
   let items = [];
-  for(let i = 0; i < arr.length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     let mint = arr[i];
-    
+
     let stake_acc = findStakeAccount(new PublicKey(owner), new PublicKey(mint));
     let from_token_accaunt = findTokenAccount(new PublicKey(stake_acc), new PublicKey(mint));
     let to_token_accaunt = findTokenAccount(new PublicKey(owner), new PublicKey(mint));
 
     const metadataAccount = getMetadataAccount(new PublicKey(mint));
     const edition = getEditionAccount(mint);
-    const from_record_accaunt = getTokenRecordAcc(new PublicKey(from_token_accaunt), new PublicKey(mint));    
+    const from_record_accaunt = getTokenRecordAcc(new PublicKey(from_token_accaunt), new PublicKey(mint));
     const to_record_accaunt = getTokenRecordAcc(new PublicKey(to_token_accaunt), new PublicKey(mint));
 
     let tx = new Transaction();
@@ -150,7 +150,7 @@ export const unstakeNft = async (arr, setStatus) => {
           { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
           { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }
         ],
-        programId: STAKE_PROGRAM_ID, 
+        programId: STAKE_PROGRAM_ID,
         data: getInstruction('CreateTokenAcc')
       })
     );
@@ -176,7 +176,7 @@ export const unstakeNft = async (arr, setStatus) => {
           { pubkey: TOKEN_AUTH_RULES_ID, isSigner: false, isWritable: false },
           { pubkey: TOKEN_AUTH_RULES_ACC, isSigner: false, isWritable: false }
         ],
-        programId: STAKE_PROGRAM_ID, 
+        programId: STAKE_PROGRAM_ID,
         data: getInstruction('Unstake')
       })
     );
@@ -193,7 +193,7 @@ export const unstakeNft = async (arr, setStatus) => {
     let k = items[i].serialize();
     let txId = await connection.sendRawTransaction(k, { skipPreflight: true });
 
-    if(setStatus) setStatus('Unstake NFT - ' + (i + 1));
+    if (setStatus) setStatus('Unstake NFT - ' + (i + 1));
 
     let conf;
     const confirm = async id => {

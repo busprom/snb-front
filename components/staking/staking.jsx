@@ -11,12 +11,6 @@ const footerLinks = [
   { img: 'Discord', link: '/' },
 ];
 
-const stakingInfo = [
-  { title: 'Staked:', text: '5555' },
-  { title: 'Unstaked:', text: '5555' },
-  { title: 'Available for Staking:', text: '5555' },
-  { title: 'Available for Unstaking:', text: '5555' },
-];
 
 const buttonStaking = ['STAKE', 'STAKE ALL'];
 
@@ -27,6 +21,7 @@ export const Staking = ({ }) => {
   const [toStake, setToStake] = useState([]);
   const [toUnstake, setToUnstake] = useState([]);
   const [process, setProcess] = useState();
+  const [loader, setLoader] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem('wallet');
@@ -34,13 +29,15 @@ export const Staking = ({ }) => {
       setUser(user);
       init(user);
     }
-
   }, []);
 
   const init = async wallet => {
+    setToStake([]);
+    setToUnstake([]);
     const my = await getMySNB(wallet);
     setAval(my || []);
     const s = await getStakingAccounts();
+    setStaked(s);
     console.log(s);
   }
 
@@ -60,27 +57,36 @@ export const Staking = ({ }) => {
     }
   }
 
-  const getStake = async () => {
-    if (loader !== false) return;
-    setLoader(true);
+  const getStake = async type => {
+    // if (loader !== false) return;
+    // setLoader(true);
+    console.log(type);
     try {
       await addToStaking(toStake, setProcess);
-      await init();
+      await init(user);
     } catch (e) {
-      await init();
+      await init(user);
     }
   }
 
-  const getUnstake = async () => {
+  const getUnstake = async type => {
     if (loader !== false) return;
     setLoader(true);
-    try {
-      await unstakeNft(toUnstake, setProcess);
-      await init();
-    } catch (e) {
-      await init();
-    }
+    console.log(type);
+    // try {
+    //   await unstakeNft(toUnstake, setProcess);
+    //   await init();
+    // } catch (e) {
+    //   await init();
+    // }
   }
+
+  const stakingInfo = [
+    { title: 'Staked:', text: staked.length },
+    { title: 'Tokens avalible:', text: 0 },
+    { title: 'Available for Staking:', text: aval.length },
+    { title: 'Available for Unstaking:', text: 0 },
+  ];
 
   return (
     <div className={styles.index}>
@@ -118,11 +124,13 @@ export const Staking = ({ }) => {
           <div className={styles.stakingWindow}>
             <div className={styles.stakingWindowHeader}>
               <div className={styles.stakingWindowHeaderTitle}>
-                {toStake.length ? 'Selected '+toStake.length+' BUG' + (toStake.length > 1 ? 's' : '') : 'Select for Staking'}
+                {toStake.length ? 'Selected ' + toStake.length + ' BUG' + (toStake.length > 1 ? 's' : '') : 'Select for Staking'}
               </div>
               {buttonStaking.map((k, i) => (
                 <div key={i} className={styles.stakingWindowHeaderButton}>
-                  <div className={styles.stakingButton}>
+                  <div className={styles.stakingButton}
+                    onClick={getStake.bind(null, k)}
+                  >
                     <img src="/img/Arrow.svg" alt="arrov" />
                     {k}
                     <img style={{ transform: 'rotate(180deg)' }} src="/img/Arrow.svg" alt="arrov" />
@@ -154,7 +162,9 @@ export const Staking = ({ }) => {
           </div>
           <div className={styles.stakingWindow}>
             <div className={styles.stakingWindowHeader}>
-              <div className={styles.stakingWindowHeaderTitle}>Select for Staking</div>
+              <div className={styles.stakingWindowHeaderTitle}>
+                {toUnstake.length ? 'Selected ' + toUnstake.length + ' BUG' + (toUnstake.length > 1 ? 's' : '') : 'Select for Unstaking'}
+              </div>
               {buttonStaking.map((k, i) => (
                 <div key={i} className={styles.stakingWindowHeaderButton}>
                   <div className={styles.stakingButton}>
@@ -166,25 +176,35 @@ export const Staking = ({ }) => {
               ))}
             </div>
             <div className={styles.nftWrap}>
-              <div className={styles.nft}>
-                <div className={styles.nftName}>
-                  SNB #111
-                </div>
-              </div>
-              <div className={styles.nftActive}>
-                <div className={styles.nftNameActive}>
-                  SNB #111
-                </div>
-              </div>
-              <div className={styles.nft}>
-                <div className={styles.nftName}>
-                  SNB #111
-                </div>
-                <div className={styles.nftNotAvailable}>
-                  Not available now
-                </div>
-              </div>
-
+              {staked.map((k, i) => {
+                const selected = toUnstake.indexOf(k.mint) === -1;
+                const end = (parseInt(Date.now() / 1000) - k.end) > 0;
+                return (
+                  end ? <div key={i} className={selected ? styles.nft : styles.nftActive}
+                    onClick={() => setToUnstake(prev => {
+                      prev = [...prev];
+                      const index = prev.findIndex(key => key === k.mint);
+                      if (index === -1) prev.push(k.mint);
+                      else prev.splice(index, 1);
+                      return prev;
+                    })}
+                  >
+                    <img src={k.img} alt="" />
+                    <div className={selected ? styles.nftName : styles.nftNameActive}>
+                      {k.name}
+                    </div>
+                  </div>
+                  : <div className={styles.nft}>
+                    <img src={k.img} alt="" />
+                    <div className={styles.nftName}>
+                      {k.name}
+                    </div>
+                    <div className={styles.nftNotAvailable}>
+                      Not available now
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
 
