@@ -38,7 +38,6 @@ export const Staking = ({ }) => {
     setAval(my || []);
     const s = await getStakingAccounts();
     setStaked(s);
-    console.log(s);
   }
 
   const setWallet = async () => {
@@ -177,6 +176,7 @@ export const Staking = ({ }) => {
             </div>
             <div className={styles.nftWrap}>
               {staked.map((k, i) => {
+                if(k.owner !== user) return null;
                 const selected = toUnstake.indexOf(k.mint) === -1;
                 const end = (parseInt(Date.now() / 1000) - k.end) > 0;
                 return (
