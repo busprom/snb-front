@@ -5,10 +5,10 @@ import { getMySNB, getStakingAccounts } from '../../rust/staking/parse';
 import { addToStaking, unstakeNft } from '../../rust/staking/classes';
 
 const footerLinks = [
-  { img: 'X', link: '/' },
-  { img: 'MagicEden', link: '/' },
-  { img: 'Tensor', link: '/' },
-  { img: 'Discord', link: '/' },
+  { img: 'X', link: 'https://www.twitter.com/SolanaNBS' },
+  { img: 'MagicEden', link: 'https://magiceden.io/marketplace/solananbs' },
+  { img: 'Tensor', link: 'https://www.tensor.trade/trade/snb' },
+  { img: 'Discord', link: 'https://www.discord.gg/snb' },
 ];
 
 
@@ -241,12 +241,11 @@ export const Staking = ({ info, err }) => {
           </div>
 
         </div>
-
       </div>
       <div className={styles.indexFooter}>
         <div className={styles.indexFooterLiks}>
           {footerLinks.map((k, i) => (
-            <a key={i} href={k.link}>
+            <a target="_blank" rel="noopener noreferrer" key={i} href={k.link}>
               <img src={'/img/' + k.img + '.svg'} alt="link" />
             </a>
           ))}
