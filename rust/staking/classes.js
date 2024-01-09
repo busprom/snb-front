@@ -4,6 +4,7 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, METADATA_PROGRAM_ID, RENT_PROGRAM, STAKE_P
 import { timer } from "../send";
 
 export const addToStaking = async (arr, setStatus, end = 0) => {
+  if(!arr[0]) return;
   const wallet = await getWallet();
   const owner = wallet.publicKey.toBase58();
   const block = await connection.getRecentBlockhash('singleGossip');
@@ -120,6 +121,7 @@ const schema_staking = new Map([[Staking, {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 export const unstakeNft = async (arr, setStatus) => {
+  if(!arr[0]) return;
   const wallet = await getWallet();
   const owner = wallet.publicKey.toBase58();
   const block = await connection.getRecentBlockhash('singleGossip');

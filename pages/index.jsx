@@ -1,16 +1,7 @@
 import { Staking } from "../components/staking/staking"
 
-export default function Index({ user }) {
+export default function Index({ info, err }) {
   
-  return <Staking user={user} />
+  return <Staking info={info} err={err} />
 
-}
-
-export async function getServerSideProps({ req, res }) {
- 
-  return {
-    props: {
-      
-    }
-  }
 }

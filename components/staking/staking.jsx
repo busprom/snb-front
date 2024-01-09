@@ -14,7 +14,7 @@ const footerLinks = [
 
 const buttonStaking = ['STAKE', 'STAKE ALL'];
 
-export const Staking = ({ }) => {
+export const Staking = ({ info, err }) => {
   const [user, setUser] = useState(false);
   const [aval, setAval] = useState([]);
   const [staked, setStaked] = useState([]);
@@ -57,27 +57,59 @@ export const Staking = ({ }) => {
   }
 
   const getStake = async type => {
-    // if (loader !== false) return;
-    // setLoader(true);
-    console.log(type);
+    if (loader !== false) return;
+
+    const arr = [];
+    if(type === 'STAKE ALL') arr = aval.map(k => k.mint);
+    else arr = [...toStake];
+
+    if(!arr[0]) {
+      err('Error Stake', 'Please select an NFT to stake');
+      return;
+    }
+    
     try {
-      await addToStaking(toStake, setProcess);
+      setLoader(true);
+      await addToStaking(arr, setProcess);
       await init(user);
+      setLoader(false);
     } catch (e) {
       await init(user);
+      setLoader(false);
     }
   }
 
   const getUnstake = async type => {
     if (loader !== false) return;
-    setLoader(true);
-    console.log(type);
-    // try {
-    //   await unstakeNft(toUnstake, setProcess);
-    //   await init();
-    // } catch (e) {
-    //   await init();
-    // }
+
+    const arr = [];
+    if(type === 'STAKE ALL') {
+      for(let i = 0; i < staked.length; i++) {
+        if(staked[i].owner !== user) continue;
+        if((parseInt(Date.now() / 1000) - staked[i].end) < 0) continue;
+        arr.push(staked[i].mint);
+      }
+    }
+    else arr = [...toUnstake];
+
+    if(!arr[0]) {
+      err('Error Unstake', 'Please select an NFT to unstake');
+      return;
+    }
+    
+    try {
+      setLoader(true);
+      await unstakeNft(arr, setProcess);
+      await init(user);
+      setLoader(false);
+    } catch (e) {
+      await init(user);
+      setLoader(false);
+    }
+  }
+
+  const claim = () => {
+    err('Token Claiming Error', 'You do not have available tokens')
   }
 
   const stakingInfo = [
@@ -112,7 +144,7 @@ export const Staking = ({ }) => {
               {k.text}
             </div>
           ))}
-          <div className={styles.indexButtonClaim}>
+          <div className={styles.indexButtonClaim} onClick={claim}>
             <img src="/img/Arrow.svg" alt="arrov" />
             Claim
             <img style={{ transform: 'rotate(180deg)' }} src="/img/Arrow.svg" alt="arrov" />
@@ -166,9 +198,9 @@ export const Staking = ({ }) => {
               </div>
               {buttonStaking.map((k, i) => (
                 <div key={i} className={styles.stakingWindowHeaderButton}>
-                  <div className={styles.stakingButton}>
+                  <div className={styles.stakingButton} onClick={getUnstake.bind(null, k)}>
                     <img src="/img/Arrow.svg" alt="arrov" />
-                    {k}
+                    {k.replace('S', 'Uns')}
                     <img style={{ transform: 'rotate(180deg)' }} src="/img/Arrow.svg" alt="arrov" />
                   </div>
                 </div>
@@ -194,7 +226,7 @@ export const Staking = ({ }) => {
                       {k.name}
                     </div>
                   </div>
-                  : <div className={styles.nft}>
+                  : <div key={i} className={styles.nft}>
                     <img src={k.img} alt="" />
                     <div className={styles.nftName}>
                       {k.name}

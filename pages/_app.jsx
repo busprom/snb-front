@@ -5,8 +5,8 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 
 export default function MyApp({ Component, pageProps }) {
 
-  const err = (title, text) => NotificationManager.error(text, title, 8000);
-  const info = (title, text) => NotificationManager.success(text, title, 80000);
+  const err = (title, text) => NotificationManager.error(text, title, 5000);
+  const info = (title, text) => NotificationManager.success(text, title, 5000);
 
   return (
     <>
