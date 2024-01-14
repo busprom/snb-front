@@ -210,7 +210,7 @@ export const Staking = ({ info, err }) => {
               {staked.map((k, i) => {
                 if(k.owner !== user) return null;
                 const selected = toUnstake.indexOf(k.mint) === -1;
-                const end = (parseInt(Date.now() / 1000) - k.end) > 0;
+                const end = true; //(parseInt(Date.now() / 1000) - k.end) > 0;
                 return (
                   end ? <div key={i} className={selected ? styles.nft : styles.nftActive}
                     onClick={() => setToUnstake(prev => {
