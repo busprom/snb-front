@@ -24,6 +24,15 @@ export const getMySNB = async me => {
   return arr;
 }
 
+export const testParse = async () => {
+  let data = await connection.getAccountInfo(new PublicKey('BaRc8pAqGi1hcMkwsshNK8GyV4aPRNhg9GBk8b5bmdZL'));
+  data = Array.from(data.data);
+  data.unshift(0);
+  data = desStaking(Buffer.from(data));
+  ['start', 'end'].forEach(k => data[k] = parseInt(data[k]));
+  console.log(data);
+}
+
 export const getStakingAccounts = async () => {
   const accounts = await connection.getParsedProgramAccounts(
     STAKE_PROGRAM_ID

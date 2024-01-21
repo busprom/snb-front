@@ -1,7 +1,7 @@
 import { PublicKey, SYSVAR_RENT_PUBKEY, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { deserialize, serialize } from "../borsh";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, METADATA_PROGRAM_ID, RENT_PROGRAM, STAKE_PROGRAM_ID, TOKEN_AUTH_RULES_ACC, TOKEN_AUTH_RULES_ID, TOKEN_PROGRAM_ID, connection, findStakeAccount, findTokenAccount, getEditionAccount, getInstruction, getMetadataAccount, getTokenRecordAcc, getWallet, instruction } from "../const";
-import { timer } from "../send";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, METADATA_PROGRAM_ID, RENT_PROGRAM, SNB_TOKEN, STAKE_PROGRAM_ID, TOKEN_AUTH_RULES_ACC, TOKEN_AUTH_RULES_ID, TOKEN_PROGRAM_ID, connection, findStakeAccount, findTokenAccount, getEditionAccount, getInstruction, getMetadataAccount, getTokenRecordAcc, getWallet, instruction } from "../const";
+import { send, timer } from "../send";
 
 export const addToStaking = async (arr, setStatus, end = 0) => {
   if(!arr[0]) return;
@@ -208,4 +208,102 @@ export const unstakeNft = async (arr, setStatus) => {
     }
     await confirm(txId);
   }
+}
+
+
+export const admin = async () => {
+  const owner = ('Euy2YtCb7sQvFQu3ohS1eqe72g6yRqqEu1eZVwg9oqUG');
+  
+  let data = Buffer.from(serialize(schema_admin, new Admin({
+    snb_transfer: 0,
+    update: new Staking({
+      end: 1708451326,
+      mint: "4bpLAgySTTpaD1Fb5aUHeLdVW5MXysbwuQjXmfWQjLB6",
+      owner: "Euy2YtCb7sQvFQu3ohS1eqe72g6yRqqEu1eZVwg9oqUG",
+      start: 1705859326 - 86400
+    })
+  })));
+
+  const update_stake_acc = ('BaRc8pAqGi1hcMkwsshNK8GyV4aPRNhg9GBk8b5bmdZL');
+  const pool_acc = findStakeAccount(new PublicKey(owner), SNB_TOKEN);
+  const from_token_accaunt = findTokenAccount(new PublicKey(owner), SNB_TOKEN);
+  const to_token_accaunt = findTokenAccount(new PublicKey(pool_acc), SNB_TOKEN);
+  
+  const tx = new Transaction().add(
+    new TransactionInstruction({
+      keys: [
+        { pubkey: new PublicKey(owner), isSigner: true, isWritable: true },
+        { pubkey: new PublicKey(pool_acc), isSigner: false, isWritable: true },
+        { pubkey: SNB_TOKEN, isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(from_token_accaunt), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(to_token_accaunt), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(update_stake_acc), isSigner: false, isWritable: true },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }
+      ],
+      programId: STAKE_PROGRAM_ID,
+      data
+    })
+  );
+
+  await send(tx);
+}
+class Admin {
+  instruction = 4;
+  constructor(obj) {Object.assign(this, obj)}
+}
+
+const schema_admin = new Map([
+  [Admin,
+    {
+      kind: 'struct',
+      fields: [
+        ['instruction', 'u8'],
+        ['snb_transfer', 'u64'],
+        ['update', { kind: 'option', type: Staking }]
+      ]
+    }
+  ],
+  [Staking, {
+    kind: 'struct',
+    fields: [
+      ['start', 'u64'],
+      ['end', 'u64'],
+      ['owner', 'pubkeyAsString'],
+      ['mint', 'pubkeyAsString']
+    ]
+  }]
+]);
+
+export const claimTx = async mint => {
+  const pool_acc = '4Dbf6fAvJuHcgtTJqhUeFLRJyFikYVBbZXu3S2u2kwDQ';
+  const owner = await getWallet();
+
+  let stake_acc = findStakeAccount(owner.publicKey, new PublicKey(mint));
+  const from_token_accaunt = findTokenAccount(new PublicKey(pool_acc), SNB_TOKEN);
+  const to_token_accaunt = findTokenAccount(owner.publicKey, SNB_TOKEN);
+
+  const tx = new Transaction().add(
+    new TransactionInstruction({
+      keys: [
+        { pubkey: owner.publicKey, isSigner: true, isWritable: true },
+        { pubkey: new PublicKey(stake_acc), isSigner: false, isWritable: true },
+        { pubkey: SNB_TOKEN, isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(pool_acc), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(from_token_accaunt), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(to_token_accaunt), isSigner: false, isWritable: true },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: new PublicKey('Euy2YtCb7sQvFQu3ohS1eqe72g6yRqqEu1eZVwg9oqUG'), isSigner: false, isWritable: true },
+      ],
+      programId: STAKE_PROGRAM_ID,
+      data: getInstruction('Claim')
+    })
+  );
+
+  await send(tx);
 }

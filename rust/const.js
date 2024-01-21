@@ -26,7 +26,8 @@ export const getWallet = async () => {
 export const instruction = {
   CreateTokenAcc: 0,
   Stake: 1,
-  Unstake: 2
+  Unstake: 2,
+  Claim: 3
 }
 class Instruction {
   instruction;
@@ -50,6 +51,7 @@ export const METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybz
 export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
 export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 export const RENT_PROGRAM = new PublicKey('Sysvar1nstructions1111111111111111111111111');
+export const SNB_TOKEN = new PublicKey('C8k9yXXz2tESBHNYiuargjtsPm8NVMitH15fmtJbV5oY');
 
 
 export const STAKE_PROGRAM_ID = new PublicKey("74A7MPJkpAnDcMwyDfNYoZ8JprGS65y4kb1phQdy4nfT");

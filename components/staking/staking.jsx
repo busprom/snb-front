@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { disconnect, getAddr, getStakeAccount, getWallet } from '../../rust/const';
 import styles from './staking.module.sass';
-import { getMySNB, getStakingAccounts } from '../../rust/staking/parse';
-import { addToStaking, unstakeNft } from '../../rust/staking/classes';
+import { getMySNB, getStakingAccounts, testParse } from '../../rust/staking/parse';
+import { addToStaking, admin, claimTx, unstakeNft } from '../../rust/staking/classes';
 
 const footerLinks = [
   { img: 'X', link: 'https://www.twitter.com/SolanaNBS' },
@@ -39,6 +39,21 @@ export const Staking = ({ info, err }) => {
     const s = await getStakingAccounts();
     setStaked(s);
   }
+
+  const avalible = useMemo(() => {
+    const my = staked.filter(k => k.owner === user);
+    const current = parseInt(Date.now() / 1000);
+
+    let tot = 0;
+
+    for(let i = 0; i < my.length; i++) {
+      let one = my[i];
+      let dif = parseInt((current - one.start) / 86400);
+      tot += dif;
+    }
+
+    return tot * 115;
+  }, [staked, user]);
 
   const setWallet = async () => {
     if (user) {
@@ -108,8 +123,17 @@ export const Staking = ({ info, err }) => {
     }
   }
 
-  const claim = () => {
-    err('Token Claiming Error', 'You do not have available tokens')
+  const claim = async (mint, e) => {
+    e.stopPropagation();
+    try {
+      setLoader(true);
+      await claimTx(mint);
+      await init(user);
+      setLoader(false);
+    } catch (e) {
+      await init(user);
+      setLoader(false);
+    }
   }
 
   const stakingInfo = [
@@ -144,9 +168,9 @@ export const Staking = ({ info, err }) => {
               {k.text}
             </div>
           ))}
-          <div className={styles.indexButtonClaim} onClick={claim}>
+          <div className={styles.indexButtonClaim}>
             <img src="/img/Arrow.svg" alt="arrov" />
-            Claim
+            {avalible} $BUG
             <img style={{ transform: 'rotate(180deg)' }} src="/img/Arrow.svg" alt="arrov" />
           </div>
         </div>
@@ -211,6 +235,7 @@ export const Staking = ({ info, err }) => {
                 if(k.owner !== user) return null;
                 const selected = toUnstake.indexOf(k.mint) === -1;
                 const end = true; //(parseInt(Date.now() / 1000) - k.end) > 0;
+                const bug = parseInt((parseInt(Date.now() / 1000) - k.start) / 86400) * 115;
                 return (
                   end ? <div key={i} className={selected ? styles.nft : styles.nftActive}
                     onClick={() => setToUnstake(prev => {
@@ -221,6 +246,7 @@ export const Staking = ({ info, err }) => {
                       return prev;
                     })}
                   >
+                    {bug > 0 && <div className={styles.claim} onClick={claim.bind(this, k.mint)}>Claim {bug} $BUG</div>}
                     <img src={k.img} alt="" />
                     <div className={selected ? styles.nftName : styles.nftNameActive}>
                       {k.name}
